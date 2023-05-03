@@ -15,13 +15,19 @@ const CartDropdown = () => {
 
   return (
     <div className="cart-dropdown-container">
-      <div className="cart-items">
-        {cartItems.map((item) => (
-          //console.log(item)
-          <CartItem key={item.id} cartItem={item} />
-        ))}
-      </div>
-      <Button onClick={goToCheckoutHandler}>Checkout</Button>
+      {cartItems.length < 1 ? (
+        <span>Cart is Empty</span>
+      ) : (
+        <>
+          <div className="cart-items">
+            {cartItems.map((item) => (
+              //console.log(item)
+              <CartItem key={item.id} cartItem={item} />
+            ))}
+          </div>
+          <Button onClick={goToCheckoutHandler}>Checkout</Button>
+        </>
+      )}
     </div>
   );
 };

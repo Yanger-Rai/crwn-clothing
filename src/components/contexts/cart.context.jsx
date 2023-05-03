@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useReducer } from "react";
 
 const addCartItem = (cartItems, productToAdd) => {
   const productExist = cartItems.find((cartitem) => {
@@ -26,6 +26,10 @@ const deleteItem = (cartItems, product) => {
     return cartItem.id === product.id;
   });
 
+  if (!productExits) {
+    return cartItems;
+  }
+
   if (productExits.quantity === 1) {
     return cartItems.filter((item) => item.id !== product.id); //filters object with quantity 0
   }
@@ -42,18 +46,51 @@ const removeItem = (cartItems, product) => {
 };
 
 export const cartContext = createContext({
-  isOpen: false,
-  setIsOpen: () => {},
+  isCartOpen: false,
+  setIsCartOpen: () => {},
   cartItems: [],
   addItemsToCart: () => {},
   deleteItem: () => {},
   removeItem: () => {},
 });
 
-export const CartProvider = ({ children }) => {
-  const [isCartOpen, setIsCartOpen] = useState(false);
+const INITIAL_STATE = {
+  isCartOpen: false,
+  cartItems: [],
+};
 
-  const [cartItems, setCartItems] = useState([]);
+const cartReducer = (state, action) => {
+  const { type, payload } = action;
+  switch (type) {
+    case "TOGGLE_CART":
+      return {
+        ...state,
+        isCartOpen: !state.isCartOpen,
+      };
+    case "MODIFY_CART":
+      return {
+        ...state,
+        // ...payload, this works too
+        cartItems: [...payload.cartItems],
+      };
+    default:
+      throw new Error(`unhandled type of ${type} in cartReducer`);
+  }
+};
+
+export const CartProvider = ({ children }) => {
+  const [{ isCartOpen, cartItems }, dispatch] = useReducer(
+    cartReducer,
+    INITIAL_STATE
+  );
+
+  const setIsCartOpen = () => {
+    dispatch({ type: "TOGGLE_CART" });
+  };
+
+  const setCartItems = (item) => {
+    dispatch({ type: "MODIFY_CART", payload: { cartItems: item } });
+  };
 
   const addItemsToCart = (productToAdd) => {
     setCartItems(addCartItem(cartItems, productToAdd));
